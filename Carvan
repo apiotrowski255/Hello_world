@@ -1,0 +1,87 @@
+package assignment1;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+
+public class Carvan {
+	String Name, Type, Depot; // type is either automatic or manual
+	Calendar StartDate, endDate; // booked requests
+	ArrayList<Request> requests; // multiple requests for this particular carvan
+
+	public Carvan(String Name, String Type, String Depot) {
+		this.Name = Name;
+		this.Type = Type;
+		this.Depot = Depot;
+		this.requests = new ArrayList<Request>();
+	}
+
+	public boolean isAvailable(bookingTimePeriod period, Request ignoreRequest){ // this method is modified to suit the change request
+		boolean flag = true;
+
+		// it may be easier to assume flag is false, then prove that they don't
+		// overlap, and make it true
+
+		for (Request r : requests) {
+			if(r == ignoreRequest){
+				//skip
+			} else if (periodOverlaps(r.period, period)) {
+				flag = false;
+			}
+		}
+		return flag;
+	}
+	
+	public boolean isAvailable(bookingTimePeriod period) {
+		boolean flag = true;
+
+		// it may be easier to assume flag is false, then prove that they don't
+		// overlap, and make it true
+
+		for (Request r : requests) {
+			if (periodOverlaps(r.period, period)) {
+				flag = false;
+			}
+		}
+		return flag;
+	}
+
+	public void RequestCarvan(Request request) { // assumes that request is
+													// valid
+		requests.add(request);
+	}
+
+	public boolean periodOverlaps(bookingTimePeriod booked, bookingTimePeriod notbooked) {
+		boolean flag = false;
+
+		if (booked.getStartTime().compareTo(notbooked.getStartTime()) <= 0
+				&& notbooked.getStartTime().compareTo(booked.getEndTime()) < 0) {
+			flag = true;
+		}
+		if (booked.getStartTime().compareTo(notbooked.getEndTime()) < 0
+				&& notbooked.getEndTime().compareTo(booked.getEndTime()) <= 0) {
+			flag = true;
+		}
+		if (notbooked.getStartTime().compareTo(booked.getStartTime()) <= 0
+				&& booked.getStartTime().compareTo(notbooked.getEndTime()) < 0)
+			return true;
+		if (notbooked.getStartTime().compareTo(booked.getEndTime()) < 0
+				&& booked.getEndTime().compareTo(notbooked.getEndTime()) <= 0)
+			return true;
+
+		return flag;
+	}
+	
+	public Request findRequestInCarvan(int ID){
+		for(Request r: this.requests){
+			if(r.ID == ID){
+				return r;
+			} 
+		}
+		return null;
+	}
+	
+	public void CancelRequestCarvan(int ID){
+		Request r = findRequestInCarvan(ID);
+		requests.remove(r);
+	}
+}
