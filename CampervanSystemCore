@@ -1,0 +1,153 @@
+package assignment1;
+
+import java.util.ArrayList;
+
+public class CampervanSystemCore {
+	public ArrayList<Carvan> Carvans;
+	public ArrayList<Request> Requests;
+	
+	public CampervanSystemCore(){
+		this.Carvans = new ArrayList<Carvan>();
+		this.Requests = new ArrayList<Request>();
+	}
+	
+	public  ArrayList<Carvan> findAllAutomaticCarvans(){
+		ArrayList<Carvan> carvans = new ArrayList<Carvan>();
+		for(Carvan c: Carvans){
+			if(c.Type == "Automatic"){
+				carvans.add(c);
+			}
+		}
+		return carvans;
+	}
+	
+	
+	public ArrayList<Carvan> findAllManualCarvans(){
+		ArrayList<Carvan> carvans = new ArrayList<Carvan>();
+		for(Carvan c: Carvans){
+			if(c.Type == "Manual"){
+				carvans.add(c);
+			}
+		}
+		return carvans;
+	}
+	
+	public boolean isChangePossible (int ID, Request newRequest) {
+		Request r1 = findRequest(ID);
+		ArrayList<Request> newRequests = Requests;
+		newRequests.remove(r1);
+		
+		boolean flag = true;
+		if (r1 == null){
+			//request not found
+			flag = false;
+		} else {
+			
+		}
+		return flag;
+	}
+	
+	public void createCampervan(String Name, String Depot, String Type) {
+		Carvans.add(new Carvan(Name, Depot, Type));
+	}
+	
+	
+	// assumes that there is enough carvans to make the request
+	public void addNewRequest(int ID, int startHour, String startMonth, int startDay, int endHour, String endMonth,
+			int endDay, int numofCarvans, String type) {
+		ArrayList<Carvan> ArrayofCarvans = new ArrayList<Carvan>(); 
+		Request r1 = new Request(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCarvans, type);
+		if(type == "Automatic"){
+				ArrayofCarvans = findAllAutomaticCarvans();
+		} else if (type == "Manual"){
+			ArrayofCarvans = findAllManualCarvans();
+		}
+		int i = numofCarvans;
+		int j = 0;
+		while(i > 0){
+			if(ArrayofCarvans.get(j).isAvailable(r1.period)){
+				ArrayofCarvans.get(j).RequestCarvan(r1);
+			}
+			i--;
+			j++;
+		}
+		Requests.add(r1);
+	}
+	
+	// when two types of carvans are requested
+	// both types of carvans
+	public void addNewRequest(int ID, int startHour, String startMonth, int startDay, int endHour, String endMonth,
+			int endDay, int numofCarvans1, String type1, int numofCarvans2, String type2) {
+		Request r1 = new Request(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCarvans1, type1, numofCarvans2, type2);
+		ArrayList<Carvan> ArrayofCarvans1 = new ArrayList<Carvan>();
+		ArrayList<Carvan> ArrayofCarvans2 = new ArrayList<Carvan>();
+		if(type1 == "Automatic"){
+			ArrayofCarvans1 = findAllAutomaticCarvans();
+			ArrayofCarvans2 = findAllManualCarvans();
+		} else if(type1 == "Manual"){
+			ArrayofCarvans1 = findAllManualCarvans();
+			ArrayofCarvans2 = findAllAutomaticCarvans();
+		}
+		
+		int i = numofCarvans1;
+		int j = 0;
+		while (i > 0){
+			if(ArrayofCarvans1.get(j).isAvailable(r1.period)){
+				ArrayofCarvans1.get(j).RequestCarvan(r1);
+			}
+			i--;
+			j++;
+		}
+		
+		i = numofCarvans2;
+		j = 0;
+		
+		while(i > 0){
+			if(ArrayofCarvans2.get(j).isAvailable(r1.period)){
+				ArrayofCarvans1.get(j).RequestCarvan(r1);
+			}
+			i--;
+			j++;
+		}
+		
+		Requests.add(r1);
+
+	}
+	
+	public void CancelRequest(int ID){
+		Request r = findRequest(ID);
+		for(Carvan c : r.Carvans){
+			c.CancelRequestCarvan(ID);
+		}
+		Requests.remove(r);
+	}
+	
+	public Request findRequest(int ID){
+		for(Request r: Requests){
+			if(ID == r.ID){
+				return r;
+			} 
+		}
+		return null; // request not found
+	}
+	
+	public Carvan findCarvan(String name){
+		for(Carvan c: Carvans){
+			if(name == c.Name){
+				return c;
+			}
+		}
+		return null;
+	}
+	
+	public void printRecords(String Depot){ //TO CHECK --> calendar to string part scares me a little
+		for(Carvan c : Carvans){
+			if(c.Depot == Depot){
+				for(Request r: c.requests){
+					System.out.println(Depot + " " + c.Name + " " + r.startDate.toString() + " " + r.endDate.toString());
+				}
+			}
+		}
+	}
+	
+}
