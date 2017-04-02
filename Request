@@ -1,0 +1,193 @@
+package assignment1;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
+public class Request extends CampervanSystemCore {
+	int ID, numofCarvans1, numofCarvans2;
+	String TypeofCarvans1, TypeofCarvans2;
+	Calendar startDate, endDate;
+	boolean hasSecondType;
+	bookingTimePeriod period;
+
+	public Request(int ID, int startHour, String startMonth, int startDay, int endHour, String endMonth, int endDay,
+			int numofCarvans1, String TypeofCarvans1) {
+		this.ID = ID;
+
+		this.period = new bookingTimePeriod(startHour, startMonth, startDay, endHour, endMonth, endDay);
+
+		this.numofCarvans1 = numofCarvans1;
+		this.TypeofCarvans1 = TypeofCarvans1;
+		this.hasSecondType = false;
+	}
+
+	public Request(int ID, int startHour, String startMonth, int startDay, int endHour, String endMonth, int endDay,
+			int numofCarvans1, String TypeofCarvans1, int numofCarvans2, String TypeofCarvans2) {
+		this.ID = ID;
+
+		this.period = new bookingTimePeriod(startHour, startMonth, startDay, endHour, endMonth, endDay);
+
+		this.numofCarvans1 = numofCarvans1;
+		this.TypeofCarvans1 = TypeofCarvans1;
+		this.hasSecondType = true;
+		this.numofCarvans2 = numofCarvans2;
+		this.TypeofCarvans2 = TypeofCarvans2;
+	}
+
+	public boolean isCamperVanAvailable(Carvan carvan) {
+		return carvan.isAvailable(period);
+	}
+
+	public boolean enoughCarvansForRequest() {
+		boolean flag = true; // assume true
+		
+		if (this.hasSecondType) { // gotta find both
+			ArrayList<Carvan> CarvansAvailable1 = new ArrayList<Carvan>();
+			ArrayList<Carvan> CarvansAvailable2 = new ArrayList<Carvan>();
+
+			if (this.TypeofCarvans1 == "Manual") { // means that 1 is manual
+				ArrayList<Carvan> ManualCarvansToScan = findAllManualCarvans();
+				ArrayList<Carvan> AutomaticCarvansToScan = findAllAutomaticCarvans();
+				for (Carvan c : ManualCarvansToScan) {
+					if (c.isAvailable(period)) {
+						CarvansAvailable1.add(c);
+					}
+				}
+				for (Carvan c : AutomaticCarvansToScan) {
+					if (c.isAvailable(period)) {
+						CarvansAvailable2.add(c);
+					}
+				}
+
+			} else if (this.TypeofCarvans1 == "Automatic") { // means that 1 is
+																// automatic
+				ArrayList<Carvan> ManualCarvansToScan = findAllManualCarvans();
+				ArrayList<Carvan> AutomaticCarvansToScan = findAllAutomaticCarvans();
+				for (Carvan c : AutomaticCarvansToScan) {
+					if (c.isAvailable(period)) {
+						CarvansAvailable1.add(c);
+					}
+				}
+
+				for (Carvan c : ManualCarvansToScan) {
+					if (c.isAvailable(period)) {
+						CarvansAvailable2.add(c);
+					}
+				}
+			}
+			if (CarvansAvailable1.size() >= this.numofCarvans1 && CarvansAvailable2.size() >= this.numofCarvans2) {
+				flag = true;
+			} else {
+				flag = false;
+			}
+
+		} else if (!this.hasSecondType) { // only on type of campervan in this
+											// request
+			ArrayList<Carvan> CarvansAvailable = new ArrayList<Carvan>();
+
+			if (this.TypeofCarvans1 == "Manual") {
+				ArrayList<Carvan> CarvansToScanThrough = findAllManualCarvans();
+				for (Carvan c : CarvansToScanThrough) {
+					if (c.isAvailable(period)) {
+						CarvansAvailable.add(c);
+					}
+				}
+			} else if (this.TypeofCarvans1 == "Automatic") {
+				ArrayList<Carvan> CarvansToScanThrough = findAllAutomaticCarvans();
+				for (Carvan c : CarvansToScanThrough) {
+					if (c.isAvailable(period)) {
+						CarvansAvailable.add(c);
+					}
+				}
+			}
+
+			if (CarvansAvailable.size() >= this.numofCarvans1) {
+				flag = true;
+			} else {
+				flag = false;
+			}
+		}
+
+		return flag;
+	}
+
+
+	
+	public boolean enoughCarvansForRequest(Request ignorerequest) { // this time we ignore a particular request
+		boolean flag = true; // assume true
+		
+		if (this.hasSecondType) { // gotta find both
+			ArrayList<Carvan> CarvansAvailable1 = new ArrayList<Carvan>();
+			ArrayList<Carvan> CarvansAvailable2 = new ArrayList<Carvan>();
+
+			if (this.TypeofCarvans1 == "Manual") { // means that 1 is manual
+				ArrayList<Carvan> ManualCarvansToScan = findAllManualCarvans();
+				ArrayList<Carvan> AutomaticCarvansToScan = findAllAutomaticCarvans();
+				for (Carvan c : ManualCarvansToScan) {
+					if (c.isAvailable(period, ignorerequest)) {
+						CarvansAvailable1.add(c);
+					}
+				}
+				for (Carvan c : AutomaticCarvansToScan) {
+					if (c.isAvailable(period, ignorerequest)) {
+						CarvansAvailable2.add(c);
+					}
+				}
+
+			} else if (this.TypeofCarvans1 == "Automatic") { // means that 1 is
+																// automatic
+				ArrayList<Carvan> ManualCarvansToScan = findAllManualCarvans();
+				ArrayList<Carvan> AutomaticCarvansToScan = findAllAutomaticCarvans();
+				for (Carvan c : AutomaticCarvansToScan) {
+					if (c.isAvailable(period, ignorerequest)) {
+						CarvansAvailable1.add(c);
+					}
+				}
+
+				for (Carvan c : ManualCarvansToScan) {
+					if (c.isAvailable(period, ignorerequest)) {
+						CarvansAvailable2.add(c);
+					}
+				}
+			}
+			if (CarvansAvailable1.size() >= this.numofCarvans1 && CarvansAvailable2.size() >= this.numofCarvans2) {
+				flag = true;
+			} else {
+				flag = false;
+			}
+
+		} else if (!this.hasSecondType) { // only on type of campervan in this
+											// request
+			ArrayList<Carvan> CarvansAvailable = new ArrayList<Carvan>();
+
+			if (this.TypeofCarvans1 == "Manual") {
+				ArrayList<Carvan> CarvansToScanThrough = findAllManualCarvans();
+				for (Carvan c : CarvansToScanThrough) {
+					if (c.isAvailable(period, ignorerequest)) {
+						CarvansAvailable.add(c);
+					}
+				}
+			} else if (this.TypeofCarvans1 == "Automatic") {
+				ArrayList<Carvan> CarvansToScanThrough = findAllAutomaticCarvans();
+				for (Carvan c : CarvansToScanThrough) {
+					if (c.isAvailable(period, ignorerequest)) {
+						CarvansAvailable.add(c);
+					}
+				}
+			}
+
+			if (CarvansAvailable.size() >= this.numofCarvans1) {
+				flag = true;
+			} else {
+				flag = false;
+			}
+		}
+
+		return flag;
+	}
+
+}
