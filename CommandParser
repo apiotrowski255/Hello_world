@@ -1,0 +1,111 @@
+package assignment1;
+
+import java.util.Scanner;
+
+public class CommandParser {
+
+	private CampervanSystemCore system;
+	private Scanner stream;
+
+	public CommandParser(CampervanSystemCore system, Scanner stream) {
+		this.system = system;
+		this.stream = stream;
+	}
+
+	public void excute() {
+		while (stream.hasNextLine()) {
+			String line = stream.nextLine();
+
+			Scanner lineScanner = new Scanner(line);
+			while (lineScanner.hasNext()) {
+				String command = lineScanner.next();
+				if (command.equals("#")) {
+					break;
+				} else if (command.equals("Location")) {
+					String Depot = stream.next();
+					String Name = stream.next();
+					String Type = stream.next();
+
+					system.createCampervan(Name, Depot, Type);	// adds a carvan to the carvans array list
+				} else if (command.equals("Request")) {
+					int ID = stream.nextInt();
+					int startHour = stream.nextInt();
+					String startMonth = stream.next();
+					int startDay = stream.nextInt();
+
+					int endHour = stream.nextInt();
+					String endMonth = stream.next();
+					int endDay = stream.nextInt();
+
+					int numofCampervans = stream.nextInt();
+					String Type = stream.next();
+					
+					if (stream.hasNext() && stream.next() != "#") {
+						int numofCampervans2 = stream.nextInt();
+						String Type2 = stream.next();
+						
+						Request request = new Request(ID, startHour, startMonth, startDay, endHour, endMonth, endDay,
+								numofCampervans, Type, numofCampervans2, Type2);
+						if(request.enoughCarvansForRequest()){
+							// make request
+							system.addNewRequest(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCampervans, Type, numofCampervans2, Type2);
+						} else {
+							System.out.println("Booking rejected");
+						}
+					} else {
+						Request request =  new Request(ID, startHour, startMonth, startDay, endHour, endMonth, endDay,
+								numofCampervans, Type);
+						if(request.enoughCarvansForRequest()){
+							system.addNewRequest(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCampervans, Type);
+						} else {
+							System.out.println("Booking rejected");
+						}
+					}
+					
+
+				} else if (command.equals("Change")) {
+					int ID = stream.nextInt();
+					Request oldrequest = system.findRequest(ID);
+					int startHour = stream.nextInt();
+					String startMonth = stream.next();
+					int startDay = stream.nextInt();
+
+					int endHour = stream.nextInt();
+					String endMonth = stream.next();
+					int endDay = stream.nextInt();
+
+					int numofCampervans = stream.nextInt();
+					String Type = stream.next();
+					
+					if(stream.hasNext() && stream.next() != "#"){
+						int numofCampervans2 = stream.nextInt();
+						String Type2 = stream.next();
+						Request newrequest = new Request(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCampervans, Type, numofCampervans2, Type2);
+						if(newrequest.enoughCarvansForRequest(oldrequest)){
+							system.CancelRequest(ID);
+							system.addNewRequest(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCampervans, Type, numofCampervans2, Type2);
+						} else {
+							System.out.println("Change rejected");
+						}
+					} else {
+						Request newrequest = new Request(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCampervans, Type);
+						if(newrequest.enoughCarvansForRequest(oldrequest)){
+							system.CancelRequest(ID);
+							system.addNewRequest(ID, startHour, startMonth, startDay, endHour, endMonth, endDay, numofCampervans, Type);
+						} else {
+							System.out.println("Change rejected");
+						}
+					}
+				} else if (command.equals("Cancel")) {
+					int ID = stream.nextInt();
+					system.CancelRequest(ID);
+				} else if (command.equals("Print")) {
+					String Depot = stream.next();
+					system.printRecords(Depot);
+				}
+			}
+			lineScanner.close();
+		}
+		stream.close();
+	}
+}
